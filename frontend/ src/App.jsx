@@ -13,7 +13,7 @@ const App = () => {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove(theme === 'dark' ? 'light' : 'dark');
+    root.classList.remove('dark', 'light');
     root.classList.add(theme);
     root.style.backgroundColor = theme === 'dark' ? '#111827' : '#f9fafb';
   }, [theme]);
