@@ -1,16 +1,8 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
 
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  // root: '.', // default, no need to specify if root is project root
-  build: {
-    outDir: 'dist',
-    rollupOptions: {
-      input: 'public/index.html', // point to your HTML file
-    },
-  },
-  resolve: {
-    extensions: ['.js', '.jsx'],
-  },
-});
+  plugins: [react(), tailwindcss()],
+})
