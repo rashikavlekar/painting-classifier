@@ -1,0 +1,26 @@
+# Virtual environment
+venv/
+
+# Zip or dataset files
+*.zip
+*.tar.gz
+*.rar
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+
+# IDE and editor folders
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+models/art_dataset_preprocessed_new/
