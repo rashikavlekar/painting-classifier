@@ -26,7 +26,8 @@ NON_ART_PROMPTS = [
     "a mobile photo",
     "a professional headshot",
     "a real life scene",
-    "a document"
+    "a document",
+    "photographs of objects"
 ]
 
 
@@ -50,4 +51,7 @@ def is_art_clip(image: Image.Image) -> bool:
 
     print(f"[CLIP DEBUG] Art: {art_sim:.2f}, Non-Art: {non_art_sim:.2f}")
 
-    return art_sim > non_art_sim 
+    if art_sim > non_art_sim:
+        return True
+    else:
+        return False

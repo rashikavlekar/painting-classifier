@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { LoaderCircle } from 'lucide-react';
 
-const GalleryPage = () => {
+const GalleryPage = ({ userEmail }) => {
   const [groupedImages, setGroupedImages] = useState({});
   const [loading, setLoading] = useState(true);
 
-  const email =  "guest@example.com";
-
   useEffect(() => {
-    
-
     const fetchGallery = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/gallery/?user_email=${email}`);
+        const response = await fetch(`http://localhost:8000/gallery/?user_email=${userEmail}`);
         const data = await response.json();
         setGroupedImages(data || {});
       } catch (err) {
@@ -22,8 +18,8 @@ const GalleryPage = () => {
       }
     };
 
-    fetchGallery();
-  }, );
+    if (userEmail) fetchGallery();
+  }, [userEmail]);
 
   if (loading) {
     return (

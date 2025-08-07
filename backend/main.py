@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from torchvision import transforms, datasets
@@ -21,17 +21,21 @@ from utils.gemini_description import generate_dynamic_description
 from dotenv import load_dotenv
 load_dotenv()
 
-
+import json
 
 # -------------------- CONFIG --------------------
 MODEL_PATH = "models/best_model (1).pth"
-DATASET_PATH = "models/art_dataset_preprocessed_new"
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # -------------------- LOAD CLASSES --------------------
-assert os.path.exists(DATASET_PATH), "Dataset path incorrect!"
-class_names = datasets.ImageFolder(DATASET_PATH).classes
+
+
+with open("models/class_names.json", "r") as f:
+    class_names = json.load(f)
+
 num_classes = len(class_names)
+
 
 # -------------------- LOAD MODEL --------------------
 model = timm.create_model('efficientnet_b3', pretrained=False)
@@ -66,7 +70,13 @@ app.add_middleware(
 
 # -------------------- INFERENCE ROUTE --------------------
 @app.post("/predict/")
-async def predict(file: UploadFile = File(...), user_email: str = "guest@example.com"):
+async def predict_image(
+    file: UploadFile = File(...),
+    user_email: str = Form(...)
+):
+    print("[DEBUG] Email received:", user_email)
+
+
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
@@ -76,12 +86,19 @@ async def predict(file: UploadFile = File(...), user_email: str = "guest@example
 
         # ✅ Try YOLO cropping (optional fallback)
         try:
+            image_before = image.copy()
             image = detect_and_crop_yolo(image)
+            print("[YOLO] Cropping succeeded.")
         except Exception as e:
-            print("[YOLO WARNING]", e)
+            print("[YOLO WARNING]", str(e))
+
+        print("[CLIP] Running is_art_clip()")
+        result = is_art_clip(image)
+        print("[CLIP] Result:", result)
+
 
         # ✅ Check if the image is art using CLIP
-        if not is_art_clip(image):
+        if not result:
             return JSONResponse(
                 content={"message": "🚫 This image doesn't appear to be a painting or artwork."},
                 status_code=400
@@ -108,7 +125,13 @@ async def predict(file: UploadFile = File(...), user_email: str = "guest@example
             description = "📝 Description generation failed. Showing basic classification only."
 
         # ✅ Upload and DB logging
-        image_url, storage_path = upload_image_to_storage(contents, file.filename)
+        # Convert the (cropped) image to bytes for storage
+        buffered = io.BytesIO()
+        image.save(buffered, format="JPEG")
+        cropped_bytes = buffered.getvalue()
+
+        image_url, storage_path = upload_image_to_storage(cropped_bytes, file.filename)
+
         timestamp = datetime.utcnow().isoformat()
         image_hash = get_image_hash(image)
 
@@ -144,13 +167,25 @@ async def predict(file: UploadFile = File(...), user_email: str = "guest@example
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 # -------------------- HISTORY ROUTE --------------------
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from supabase import create_client, Client
+
 @app.get("/history/")
 async def get_history(user_email: str):
     try:
-        response = supabase.table("predictions").select("*").eq("user_email", user_email).order("timestamp", desc=True).execute()
+        response = supabase.table("predictions")\
+                           .select("*")\
+                           .eq("user_email", user_email)\
+                           .order("timestamp", desc=True)\
+                           .execute()
+        
+        print("History Data:", response.data)  # Log on backend
+
         return response.data
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
 
 
 
@@ -187,6 +222,32 @@ async def delete_prediction(prediction_id: str = Query(...)):
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
+
+
+@app.get("/prediction-details/")
+async def get_prediction_details(
+    prediction_id: str = Query(...),
+    user_email: str = Query(...)
+):
+    try:
+        # Fetch prediction and verify ownership
+        response = supabase.table("predictions")\
+            .select("*")\
+            .eq("id", prediction_id)\
+            .eq("user_email", user_email)\
+            .single()\
+            .execute()
+
+        if not response.data:
+            return JSONResponse(
+                content={"error": "Prediction not found or access denied"},
+                status_code=404
+            )
+
+        return response.data
+
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 

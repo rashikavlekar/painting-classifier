@@ -1,7 +1,12 @@
 query_list = [
 
 
-"Pastport sized photos and selfies"
+"art gallery interior", 
+    "living room with painting", 
+    "person standing next to painting", 
+    "museum exhibition wall", 
+    "home wall art decor", 
+    "hotel lobby with painting"
 
     ]
 

@@ -3,10 +3,11 @@ import { Routes, Route } from 'react-router-dom'; // ✅ Add this
 
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
+import AuthPage from './pages/AuthPage';
 import UploadPage from './pages/UploadPage';
 import ResultsPage from './pages/ResultsPage';
-import HistoryPage from './pages/HistoryPage';
-import GalleryPage from './pages/GalleryPage';
+import HistoryPageWrapper from './pages/HistoryPageWrapper';
+import GalleryPageWrapper from './pages/GalleryPageWrapper';
 
 
 
@@ -22,7 +23,8 @@ const App = () => {
     const root = document.documentElement;
     root.classList.remove('dark', 'light');
     root.classList.add(theme);
-    root.style.backgroundColor = theme === 'dark' ? '#111827' : '#f9fafb';
+    root.style.backgroundColor = theme === 'dark' ? '#F5CBCB' : '#ffe4ec'; // light pastel pink
+
   }, [theme]);
 
   const toggleTheme = () => {
@@ -35,10 +37,19 @@ const App = () => {
       <main className="p-4">
         <Routes>
           <Route path="/" element={<HomePage setPage={setPage} />} />
+          <Route path="/login" element={<AuthPage setPage={setPage} />} />
           <Route path="/upload" element={<UploadPage setPage={setPage} setHistory={setHistory} />} />
           <Route path="/results" element={<ResultsPage setPage={setPage} />} />
-          <Route path="/history" element={<HistoryPage setPage={setPage} history={history} setHistory={setHistory} />} />
-          <Route path="/gallery" element={<GalleryPage setPage={setPage} />} />
+          <Route path="/history" element={
+                                          <HistoryPageWrapper
+                                            setPage={setPage}
+                                            history={history}
+                                            setHistory={setHistory}
+                                          />
+                                        } />
+          
+<Route path="/gallery" element={<GalleryPageWrapper />} />
+
         </Routes>
       </main>
     </div>

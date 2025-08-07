@@ -1,10 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Palette, Sparkles } from 'lucide-react';
 import ActionButton from '../components/ActionButton';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from './supabase.Client';
 
 const HomePage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        // Not logged in, redirect to login
+        navigate('/login');
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   return (
     <div className="text-center flex flex-col items-center justify-center p-4 h-[calc(100vh-150px)] animate-fade-in">

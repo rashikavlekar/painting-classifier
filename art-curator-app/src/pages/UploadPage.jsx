@@ -3,6 +3,7 @@ import { Upload, BrainCircuit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ActionButton from '../components/ActionButton';
 import { classifyImage } from '../utils/classifyImage'; // ✅ Import here
+import { supabase } from './supabase.Client'; // Add this at the top
 
 const UploadPage = ({ setHistory }) => {
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -33,7 +34,20 @@ const UploadPage = ({ setHistory }) => {
     if (!file) return;
     try {
       setLoading(true);
-      const result = await classifyImage(file, "guest@example.com");
+      
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert('You must be logged in to classify an image.');
+      navigate('/login');
+      return;
+    }
+
+    const result = await classifyImage(file, user.email); // or user.email if you're using email
+
 
       const classification = {
         id: Date.now(),

@@ -2,15 +2,34 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Palette, BrainCircuit, Upload, Calendar, AlertTriangle } from 'lucide-react';
 import ActionButton from '../components/ActionButton';
-
+import { useEffect } from 'react';
+import { supabase } from './supabase.Client'
 const ResultsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/login');
+      }
+    };
+
+    checkUser();
+  }, [navigate]);
+
   const { result, image } = location.state || {};
 
   const handleReset = () => {
     navigate('/upload');
   };
+  useEffect(() => {
+  if (!result) {
+    navigate('/upload');
+  }
+}, [result, navigate]);
 
   const warning = result?.warning;
 
