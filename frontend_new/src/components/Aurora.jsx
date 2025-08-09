@@ -110,13 +110,24 @@ void main() {
 `;
 
 export default function Aurora(props) {
-  const {
-    colorStops = ["#5227FF", "#7cff67", "#5227FF"],
-    amplitude = 1.0,
-    blend = 0.5
-  } = props;
-  const propsRef = useRef(props);
-  propsRef.current = props;
+  // Set defaults here, overriding incoming props if needed
+  const defaultProps = {
+    colorStops: ["#5227FF", "#7cff67", "#5227FF"],
+    amplitude: 0.3,  // smaller waves
+    blend: 0.6,      // stronger blending
+    speed: 0.25      // slower animation speed
+  };
+
+  // Merge props with defaults, forcing amplitude, blend, speed to default values
+  const mergedProps = {
+    ...props,
+    amplitude: defaultProps.amplitude,
+    blend: defaultProps.blend,
+    speed: defaultProps.speed
+  };
+
+  const propsRef = useRef(mergedProps);
+  propsRef.current = mergedProps;
 
   const ctnDom = useRef(null);
 
@@ -153,7 +164,7 @@ export default function Aurora(props) {
       delete geometry.attributes.uv;
     }
 
-    const colorStopsArray = colorStops.map((hex) => {
+    const colorStopsArray = mergedProps.colorStops.map((hex) => {
       const c = new Color(hex);
       return [c.r, c.g, c.b];
     });
@@ -163,10 +174,10 @@ export default function Aurora(props) {
       fragment: FRAG,
       uniforms: {
         uTime: { value: 0 },
-        uAmplitude: { value: amplitude },
+        uAmplitude: { value: mergedProps.amplitude },
         uColorStops: { value: colorStopsArray },
         uResolution: { value: [ctn.offsetWidth, ctn.offsetHeight] },
-        uBlend: { value: blend }
+        uBlend: { value: mergedProps.blend }
       }
     });
 
@@ -176,11 +187,11 @@ export default function Aurora(props) {
     let animateId = 0;
     const update = (t) => {
       animateId = requestAnimationFrame(update);
-      const { time = t * 0.01, speed = 1.0 } = propsRef.current;
+      const { time = t * 0.01, speed } = propsRef.current;
       program.uniforms.uTime.value = time * speed * 0.1;
-      program.uniforms.uAmplitude.value = propsRef.current.amplitude ?? 1.0;
-      program.uniforms.uBlend.value = propsRef.current.blend ?? blend;
-      const stops = propsRef.current.colorStops ?? colorStops;
+      program.uniforms.uAmplitude.value = propsRef.current.amplitude;
+      program.uniforms.uBlend.value = propsRef.current.blend;
+      const stops = propsRef.current.colorStops;
       program.uniforms.uColorStops.value = stops.map((hex) => {
         const c = new Color(hex);
         return [c.r, c.g, c.b];
@@ -200,7 +211,7 @@ export default function Aurora(props) {
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amplitude]);
+  }, []);
 
   return <div ref={ctnDom} className="aurora-container" />;
 }
