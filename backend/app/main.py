@@ -5,9 +5,16 @@ from app.api.history import router as history_router
 from app.api.delete import router as delete_router
 from app.api.gallery import router as gallery_router
 from app.api.prediction_details import router as prediction_details_router
+from app.api.style_transfer import router as style_transfer_router
 
 # -------------------- FASTAPI INIT --------------------
 app = FastAPI(title="🎨 Painting Style Classifier API")
+
+from fastapi.staticfiles import StaticFiles
+
+
+app.mount("/static", StaticFiles(directory="app/models/saved_models"), name="static")
+
 
 # Enable CORS for all origins (for development)
 app.add_middleware(
@@ -24,3 +31,4 @@ app.include_router(history_router)
 app.include_router(delete_router)
 app.include_router(gallery_router)
 app.include_router(prediction_details_router)
+app.include_router(style_transfer_router)
