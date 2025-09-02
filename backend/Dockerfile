@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-WORKDIR /app
+WORKDIR /backend
 
 # Install system dependencies required for OpenCV
 
@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 8000
 
 # Run app
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
