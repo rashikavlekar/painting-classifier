@@ -1,6 +1,0 @@
-path: C:/Users/gcf17/Desktop/Internships/PSL/painting-classifier/painting-dataset
-train: train/images
-val: val/images
-
-names: ['painting']
-nc: 1
