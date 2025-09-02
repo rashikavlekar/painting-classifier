@@ -4,3 +4,10 @@ tensorflow
 pillow
 python-multipart
 numpy
+supabase
+python-dotenv
+pydantic
+torch
+transformers
+Pillow
+opencv-python
