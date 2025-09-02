@@ -8,6 +8,7 @@ supabase
 python-dotenv
 pydantic
 torch
+torchvision
 transformers
 Pillow
 opencv-python
