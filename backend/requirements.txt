@@ -13,3 +13,4 @@ transformers
 Pillow
 opencv-python
 timm
+ultralytics
