@@ -3,7 +3,14 @@ from PIL import Image
 import numpy as np
 
 # ✅ Load your custom-trained YOLOv8 painting detector
-model = YOLO(r"C:\Users\gcf17\Desktop\painting-classifier\backend\models\best.pt")  # <-- Use your fine-tuned weights path here
+import os
+
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "models", "best.pt")
+
+model = YOLO(MODEL_PATH)
+ # <-- Use your fine-tuned weights path here
 
 def detect_and_crop_yolo(image: Image.Image) -> Image.Image:
     results = model(image, conf=0.05)
