@@ -1,15 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { LoaderCircle, Download, X } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import Aurora from '../components/Aurora';
-
-const images = [
-  '/art5.jpg',
-  '/art5.jpg',
-  '/art5.jpg',
-  '/art5.jpg',
-  '/art5.jpg',
-  '/art5.jpg',
-];
 
 const links = [
   { name: 'Home', path: '/' },
@@ -18,9 +11,67 @@ const links = [
   { name: 'About', path: '/about' },
 ];
 
-const Gallery = () => {
+const GalleryPage = ({ setPage }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [groupedImages, setGroupedImages] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  useEffect(() => {
+    const fetchGallery = async () => {
+      setPage && setPage("gallery");
+
+      const { data: { user }, error } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        console.error("User not authenticated:", error?.message);
+        setLoading(false);
+        return;
+      }
+
+      const user_email = user.email;
+
+      try {
+        const response = await fetch(`http://localhost:8000/gallery/?user_email=${user_email}`);
+        const data = await response.json();
+        setGroupedImages(data || {});
+      } catch (err) {
+        console.error("Failed to load gallery:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGallery();
+  }, [setPage]);
+
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(selectedImage.url);
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = selectedImage.name || 'painting.jpg';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Failed to download image.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[60vh] animate-fade-in">
+        <LoaderCircle className="animate-spin w-8 h-8 text-blue-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full min-h-screen bg-white dark:bg-gray-900 overflow-hidden flex flex-col">
@@ -51,20 +102,32 @@ const Gallery = () => {
           Explore a curated selection of breathtaking artworks from various styles.
         </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
-          {images.map((img, idx) => (
-            <div
-              key={idx}
-              className="overflow-hidden rounded-xl shadow-lg hover:scale-105 transition-transform"
-            >
-              <img
-                src={img}
-                alt={`Art ${idx + 1}`}
-                className="w-full h-48 object-cover"
-              />
+        {Object.keys(groupedImages).length === 0 ? (
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            No artworks found. Classify images to see them here.
+          </div>
+        ) : (
+          Object.entries(groupedImages).map(([style, images]) => (
+            <div key={style} className="mb-10 max-w-6xl mx-auto">
+              <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-3">{style}</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {images.map((url, idx) => (
+                  <div
+                    key={idx}
+                    className="overflow-hidden rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer"
+                    onClick={() => setSelectedImage({ url, style })}
+                  >
+                    <img
+                      src={url}
+                      alt={`${style}-${idx}`}
+                      className="w-full h-48 object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          ))
+        )}
       </main>
 
       {/* Footer */}
@@ -137,44 +200,16 @@ const Gallery = () => {
               Follow Us
             </h3>
             <div className="flex space-x-4 text-2xl">
-              {/* Facebook */}
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="hover:text-indigo-600 dark:hover:text-indigo-400"
-              >
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-indigo-600 dark:hover:text-indigo-400">
                 <i className="fab fa-facebook" />
               </a>
-              {/* Twitter */}
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Twitter"
-                className="hover:text-indigo-600 dark:hover:text-indigo-400"
-              >
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="hover:text-indigo-600 dark:hover:text-indigo-400">
                 <i className="fab fa-twitter" />
               </a>
-              {/* Instagram */}
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="hover:text-indigo-600 dark:hover:text-indigo-400"
-              >
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-indigo-600 dark:hover:text-indigo-400">
                 <i className="fab fa-instagram" />
               </a>
-              {/* LinkedIn */}
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn"
-                className="hover:text-indigo-600 dark:hover:text-indigo-400"
-              >
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-indigo-600 dark:hover:text-indigo-400">
                 <i className="fab fa-linkedin" />
               </a>
             </div>
@@ -186,8 +221,39 @@ const Gallery = () => {
           © {new Date().getFullYear()} Art Curator. All rights reserved.
         </div>
       </footer>
+
+      {/* Image Modal Viewer */}
+      {selectedImage && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center px-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 max-w-3xl w-full shadow-lg relative">
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <h3 className="text-xl font-semibold text-center text-gray-800 dark:text-white mb-4">
+              {selectedImage.style}
+            </h3>
+            <img
+              src={selectedImage.url}
+              alt="Selected Artwork"
+              className="w-full max-h-[70vh] object-contain rounded-lg mb-4"
+            />
+            <div className="text-center">
+              <button
+                onClick={handleDownload}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Gallery;
+export default GalleryPage;

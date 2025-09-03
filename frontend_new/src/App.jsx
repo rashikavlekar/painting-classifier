@@ -11,6 +11,10 @@ import PredictionDetail from './pages/PredictionDetail';
 import About from './pages/About';
 import Gallery from './pages/Gallery';
 import AuthPage from './pages/AuthPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import ImageConverter from './pages/ImageConvertor';
+
+
 
 
 const App = () => {
@@ -40,9 +44,9 @@ const App = () => {
           <Route path="/upload" element={<UploadPage setHistory={setHistory} />} />
           <Route path="/about" element={<About />} />
           <Route path="/history/:id" element={<PredictionDetail />} />
-
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/gallery" element={<Gallery />} />
-
+          <Route path="/image-converter" element={<ImageConverter />} />
 
           
           {/* ✅ Pass history to ResultsPage so it can show the latest result */}

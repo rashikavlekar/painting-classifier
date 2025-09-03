@@ -65,6 +65,13 @@ const Navbar = ({ toggleTheme, theme }) => {
               text="Home"
               isActive={location.pathname === "/"}
             />
+
+            <InteractiveHoverButton
+              to="/image-converter"
+              icon={<History size={18} />}
+              text="Convert"
+              isActive={location.pathname === "/image-converter"}
+            />
             <InteractiveHoverButton
               to="/history"
               icon={<History size={18} />}
