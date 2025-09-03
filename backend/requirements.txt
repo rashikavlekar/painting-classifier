@@ -13,4 +13,5 @@ transformers
 opencv-python
 timm
 ultralytics
-git+https://github.com/openai/CLIP.git
+open-clip-torch
+
